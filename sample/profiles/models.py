@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 
+from djuploader.csvutils import CsvQuerySet
+
 
 class Profile(models.Model):
     GENDER_NA = 0
@@ -35,3 +37,6 @@ class Profile(models.Model):
     class Meta:
         verbose_name = _('Profile')
         verbose_name_plural = _('Profile')
+
+    objects = models.Manager()      # default Manager
+    csv = CsvQuerySet.as_manager()  # csv Manager
