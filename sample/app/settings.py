@@ -100,3 +100,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
+#####
+LANGUAGE_CODE = 'ja'
+TIME_ZONE = 'Asia/Tokyo'
+INSTALLED_APPS += (
+    'djuploader',
+)
