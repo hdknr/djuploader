@@ -1,0 +1,14 @@
+Django
+MySQL-python
+pysqlite
+Sphinx
+Werkzeug
+jcconv
+django-extensions
+Pillow
+requests
+furl
+pykf
+Markdown
+ordereddict
+gunicorn
