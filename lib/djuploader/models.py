@@ -10,6 +10,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 import mimetypes
 import os
+import signals
 
 
 class BaseModel(models.Model):
@@ -127,3 +128,8 @@ class UploadFile(BaseModel):
     class Meta:
         verbose_name = _('Uploaded File')
         verbose_name_plural = _('Uploaded File')
+
+    def signal(self):
+        signals.uploaded.send(
+            sender=self.content_type.model_class(),
+            upload=self)

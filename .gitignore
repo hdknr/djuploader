@@ -5,3 +5,4 @@ app/local_settings.py
 *.sqlite3
 logs
 assets
+sample/upload
