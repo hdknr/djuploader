@@ -6,7 +6,6 @@
 '''
 from django.conf import settings
 from django.utils.encoding import force_unicode, force_text
-from django.db import models
 
 import csv
 import io
@@ -24,7 +23,7 @@ def detect_encoding(stream):
     return ret
 
 
-class UnicodeReader(object):
+class CsvReader(object):
 
     def __init__(
         self, iterable, dialect='excel', error_mode="strict", encoding=None,
@@ -75,7 +74,7 @@ class UnicodeReader(object):
         return self.line_num, cols, self.errors
 
 
-class UnicodeWriter(object):
+class CsvWriter(object):
     def __init__(
         self, stream, dialect=None, encoding=None, errors="strict", **kwds
     ):
@@ -88,53 +87,5 @@ class UnicodeWriter(object):
         self.writer.writerow(
             map(lambda s: force_text(s and s or '').encode(self.encoding), row))
 
-    def writerows(self, rows):
-        for row in rows:
-            self.writerow(row)
-
-
-class CsvQuerySet(models.QuerySet):
-
-    def field_verbose_name(self, model, field_name):
-        return model._meta.get_field_by_name(field_name)[0].verbose_name
-
-    def get_field(self, model, name):
-        return model._meta.get_field_by_name(name)
-
-    def export(self,
-               stream, header=True, excludes=[], relates=[], **kwargs):
-
-        writer = UnicodeWriter(stream, **kwargs)
-
-        names = dict(
-            (field.name, field)
-            for field in self.model._meta.fields
-            if field.name not in excludes
-        )
-
-        related_models = {}
-        for m, f in [r.split('.') for r in relates]:
-            related_models[m] = related_models.get(m, []) + [f]
-
-        if header:
-            cols = [field.verbose_name for name, field in names.items()]
-
-            for rfn, rcs in related_models.items():
-                cols += [
-                    u"{0}.{1}".format(
-                        rfn, self.field_verbose_name(
-                            names[rfn].related_model, i))
-                    for i in rcs]
-
-            writer.writerow(cols)
-
-        for row in self.all():
-            cols = [
-                getattr(row, name, None) or ''
-                for name, field in names.items() if name not in excludes]
-
-            for rfn, rcs in related_models.items():
-                value = getattr(row, rfn)
-                cols += [value and getattr(value, i, None) or '' for i in rcs]
-
-            writer.writerow(cols)
+    def close(self):
+        pass

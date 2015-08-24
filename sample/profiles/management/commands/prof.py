@@ -2,11 +2,12 @@
 
 from pycommand import djcommand
 from profiles import models
+import os
 
 
 class Command(djcommand.Command):
 
-    class ExportProfile(djcommand.SubCommand):
+    class ExportProfileCsv(djcommand.SubCommand):
         name = "export_profile"
         description = "export Profile"
         args = [
@@ -14,9 +15,11 @@ class Command(djcommand.Command):
         ]
 
         def run(self, params, **options):
+            name, ext = os.path.splitext(params.path[0])
             with open(params.path[0], 'w') as out:
-                models.Profile.csv.export(
-                    out, relates=['user.username', 'user.email'])
+                models.Profile.uploader.export(
+                    out, format=ext[1:],
+                    relates=['user.username', 'user.email'])
 
     class ExportUser(djcommand.SubCommand):
         name = "export_user"
@@ -27,9 +30,10 @@ class Command(djcommand.Command):
 
         def run(self, params, **options):
             from django.contrib.auth.models import User
-            from djuploader.csvutils import CsvQuerySet
+            from djuploader.queryset import UploadQuerySet
+            name, ext = os.path.splitext(params.path[0])
             with open(params.path[0], 'w') as out:
-                CsvQuerySet(User).all().export(out)
+                UploadQuerySet(User).all().export(out, format=ext[1:])
 
     class Update(djcommand.SubCommand):
         name = "update"

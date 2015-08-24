@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 
-from djuploader.csvutils import CsvQuerySet
+from djuploader.queryset import UploadQuerySet
 
 
 class Profile(models.Model):
@@ -38,5 +38,5 @@ class Profile(models.Model):
         verbose_name = _('Profile')
         verbose_name_plural = _('Profile')
 
-    objects = models.Manager()      # default Manager
-    csv = CsvQuerySet.as_manager()  # csv Manager
+    objects = models.Manager()              # default Manager
+    uploader = UploadQuerySet.as_manager()
