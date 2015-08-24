@@ -12,3 +12,4 @@ pykf
 Markdown
 ordereddict
 gunicorn
+openpyxl

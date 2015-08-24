@@ -12,6 +12,7 @@ import mimetypes
 import os
 import signals
 import csvutils
+import xlsxutils
 # import traceback
 
 
@@ -137,6 +138,11 @@ class UploadFile(BaseModel):
     def open(self, headers=None):
         if self.mimetype == 'text/csv':
             return csvutils.UnicodeReader(
+                self.file, headers=headers)
+
+        if self.mimetype == xlsxutils.EXCEL2007:
+            # self.file.path....
+            return xlsxutils.XlsxReader(
                 self.file, headers=headers)
 
         # TODO: Excel and other file ...
