@@ -154,8 +154,13 @@ class UploadFile(BaseModel):
     def set_model_field_value(self, instance, field, value):
         try:
             if not (value == '' and field.null):
-                value = field.to_python(value)
-                setattr(instance, field.name, value)
+                if field.choices:
+                    for v, l in field.choices:
+                        if value in (v, l):
+                            setattr(instance, field.name, v)
+                            return
+                else:
+                    setattr(instance, field.name, field.to_python(value))
         except ValidationError:
             pass
 
