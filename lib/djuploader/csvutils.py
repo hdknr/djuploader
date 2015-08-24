@@ -6,7 +6,6 @@
 '''
 from django.conf import settings
 from django.utils.encoding import force_unicode, force_text
-from django.http import HttpResponse
 from django.db import models
 
 import csv
