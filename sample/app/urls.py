@@ -19,4 +19,5 @@ from django.contrib import admin
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^profiles/', include('profiles.urls')),
+    url(r'^upload/(?P<path>.+)$', 'djuploader.views.download'),
 ]

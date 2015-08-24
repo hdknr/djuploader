@@ -42,7 +42,7 @@ class UnicodeReader(object):
             csv.reader(iterable, dialect=dialect, *args, **kwargs) or \
             csv.DictReader(iterable, dialect=dialect, *args, **kwargs)
         self.dialect = self.reader.dialect
-        self.line_num = 0
+        self.line_num = 1
         self.error_mode = error_mode
 
     def reset_state(self):
@@ -61,6 +61,10 @@ class UnicodeReader(object):
     def next(self):
         self.reset_state()
         self.line_num = self.reader.line_num
+
+        if self.line_num == 0:          # TODO: 0, 2, 3, 4...
+            self.line_num = 1
+
         if self.headers:
             cols = dict(
                 zip(self.headers,
@@ -103,7 +107,8 @@ class CsvResponse(HttpResponse):
             self.set_filename(filename)
 
     def set_filename(self, filename):
-        self['Content-Disposition'] = 'attachment; filename=%s' % filename
+        self['Content-Disposition'] = 'attachment; filename="{0}"'.format(
+            force_text(filename).encode('utf8'))
 
 
 class CsvQuerySet(models.QuerySet):

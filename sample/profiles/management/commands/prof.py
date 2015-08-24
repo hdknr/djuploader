@@ -30,3 +30,14 @@ class Command(djcommand.Command):
             from djuploader.csvutils import CsvQuerySet
             with open(params.path[0], 'w') as out:
                 CsvQuerySet(User).all().export(out)
+
+    class Update(djcommand.SubCommand):
+        name = "update"
+        description = "update"
+        args = [
+            (('id',), dict(nargs=1, help="update")),
+        ]
+
+        def run(self, params, **options):
+            from djuploader.models import UploadFile
+            UploadFile.objects.get(id=params.id[0]).signal()

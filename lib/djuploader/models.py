@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.core.files.images import ImageFile
 from django.core.files.storage import FileSystemStorage
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models.fields.files import FieldFile
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
+from django.core.exceptions import ValidationError
 import mimetypes
 import os
 import signals
+import csvutils
+# import traceback
 
 
 class BaseModel(models.Model):
@@ -25,20 +27,6 @@ class BaseModel(models.Model):
 
     def contenttype(self):
         return ContentType.objects.get_for_model(self.__class__)
-
-    def publish_file(self, response_class, name, prefix="public", meta=False):
-        ''' name: FileField derived class field name
-        '''
-        obj = getattr(self, name, None)
-        data = obj.field.is_valid_prefix(prefix) and ImageFile(obj.file)
-        res = response_class(
-            data, content_type=mimetypes.guess_type(obj.path)[0], )
-
-        if meta:
-            res['Content-Disposition'] = 'attachment; filename={0]'.format(
-                os.path.basename(obj.path)
-            )
-        return res
 
     def admin_change_url(self):
         url = 'admin:{0}_{1}_change'.format(
@@ -133,3 +121,46 @@ class UploadFile(BaseModel):
         signals.uploaded.send(
             sender=self.content_type.model_class(),
             upload=self)
+
+    @property
+    def mimetype(self):
+        return mimetypes.guess_type(self.file.path)[0]
+
+    @property
+    def model_meta(self):
+        return self.content_type.model_class()._meta
+
+    def open(self, headers=None):
+        if self.mimetype == 'text/csv':
+            return csvutils.UnicodeReader(
+                self.file, headers=headers)
+
+        # TODO: Excel and other file ...
+        return []
+
+    def get_fields_verbose(self):
+        if not hasattr(self, '_fields_verbose'):
+            self._fields_verbose = dict(
+                (field.verbose_name, field)
+                for field in self.model_meta.fields)
+        return self._fields_verbose
+
+    def get_field(self, name):
+        ''' field name or verbose name '''
+        meta = self.model_meta
+        return name in meta.fields and meta.get_field_by_name(name) or \
+            self.get_fields_verbose().get(name, None)
+
+    def set_model_field_value(self, instance, field, value):
+        try:
+            if not (value == '' and field.null):
+                value = field.to_python(value)
+                setattr(instance, field.name, value)
+        except ValidationError:
+            pass
+
+    def update_instance(self, instance, params, excludes=[]):
+        for name, value in params.items():
+            field = self.get_field(name)
+            if field and field.name not in excludes:
+                self.set_model_field_value(instance, field, value)
