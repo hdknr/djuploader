@@ -3,20 +3,20 @@ from django.http import Http404
 from django.contrib.admin.views.decorators import staff_member_required
 
 import models
-import csvutils
+import utils
 
 import logging
 logger = logging.getLogger('djuploader')
-import traceback
+# import traceback
 
 
 @staff_member_required
 def download(request, path):
     upload = models.UploadFile.objects.filter(file=path).first()
     try:
-        if upload.mimetype == 'text/csv':
-            return csvutils.CsvResponse(
-                upload.file, filename=u"{0}.csv".format(upload.name))
+        return utils.FileResponse(
+            upload.file, content_type=upload.mimetype,
+            filename=upload.basename)
+
     except:
-        print traceback.format_exc()
         raise Http404

@@ -94,23 +94,6 @@ class UnicodeWriter(object):
             self.writerow(row)
 
 
-class CsvResponse(HttpResponse):
-    def __init__(
-        self, content='', mimetype=None, status=None,
-        content_type='application/octet-stream',
-        filename=None, *args, **kwargs
-    ):
-        super(CsvResponse, self).__init__(
-            content, mimetype, status, content_type)
-
-        if filename:
-            self.set_filename(filename)
-
-    def set_filename(self, filename):
-        self['Content-Disposition'] = 'attachment; filename="{0}"'.format(
-            force_text(filename).encode('utf8'))
-
-
 class CsvQuerySet(models.QuerySet):
 
     def field_verbose_name(self, model, field_name):

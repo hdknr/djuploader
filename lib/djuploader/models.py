@@ -130,6 +130,10 @@ class UploadFile(BaseModel):
     def model_meta(self):
         return self.content_type.model_class()._meta
 
+    @property
+    def basename(self):
+        return self.file and os.path.basename(self.file.name) or ''
+
     def open(self, headers=None):
         if self.mimetype == 'text/csv':
             return csvutils.UnicodeReader(
