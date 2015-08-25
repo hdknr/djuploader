@@ -58,6 +58,24 @@ class UploadFileField(models.FileField):
     MEDIA_URL = 'UPLOAD_MEDIA_URL'
     DEFAULT_PREFIX = 'upload'
 
+    @classmethod
+    def get_location(cls):
+        root = os.path.join(
+            os.path.dirname(os.path.dirname(settings.MEDIA_ROOT)),
+            '{0}/'.format(cls.DEFAULT_PREFIX))
+
+        location = cls.MEDIA_ROOT and getattr(
+            settings, cls.MEDIA_ROOT, root) or root
+
+        return location
+
+    @classmethod
+    def get_base_url(cls):
+        default_url = '/{0}'.format(cls.DEFAULT_PREFIX)
+        base_url = cls.MEDIA_URL and getattr(
+            settings, cls.MEDIA_URL, default_url)
+        return base_url
+
     def get_internal_type(self):
         return 'FileField'
 
@@ -69,27 +87,12 @@ class UploadFileField(models.FileField):
         )
 
     def _storage(self, storage=None):
-        if storage:
+        if storage or not self.DEFAULT_PREFIX:
             return storage
 
-        if self.DEFAULT_PREFIX:
-
-            default_root = os.path.join(
-                os.path.dirname(os.path.dirname(settings.MEDIA_ROOT)),
-                '{0}/'.format(self.DEFAULT_PREFIX))
-            default_url = '/{0}'.format(self.DEFAULT_PREFIX)
-
-            location = self.MEDIA_ROOT and getattr(
-                settings, self.MEDIA_ROOT, default_root) or default_root
-
-            base_url = self.MEDIA_URL and getattr(
-                settings, self.MEDIA_URL, default_url)
-
-            storage = FileSystemStorage(
-                location=location,
-                base_url=base_url,)
-
-            return storage
+        return FileSystemStorage(
+            location=self.get_location(),
+            base_url=self.get_base_url(),)
 
     def __init__(
         self, verbose_name=None, name=None,
@@ -199,3 +202,14 @@ class UploadFileError(BaseModel):
     class Meta:
         verbose_name = _('Uploaded File Error')
         verbose_name_plural = _('Uploaded File Error')
+
+
+def remove_missing_files():
+    from django.utils._os import abspathu
+    location = abspathu(UploadFileField.get_location())
+    for (dirpath, dirnames, filenames) in os.walk(location):
+        for name in filenames:
+            fullpath = os.path.join(dirpath, name)
+            if not UploadFile.objects.filter(
+                    file=fullpath.replace(location + '/', '')).exists():
+                os.remove(fullpath)

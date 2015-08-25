@@ -35,6 +35,14 @@ class Command(djcommand.Command):
             with open(params.path[0], 'w') as out:
                 UploadQuerySet(User).all().export(out, format=ext[1:])
 
+    class RemoveMissingUploadProfile(djcommand.SubCommand):
+        name = "remove_missing_upload_profile"
+        description = "remove missing upload profile"
+
+        def run(self, params, **options):
+            from djuploader.models import remove_missing_files
+            remove_missing_files()
+
     class Update(djcommand.SubCommand):
         name = "update"
         description = "update"
