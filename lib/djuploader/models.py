@@ -10,9 +10,9 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.exceptions import ValidationError
 import mimetypes
 import os
+
 import signals
-import csvutils
-import xlsxutils
+import utils
 # import traceback
 
 
@@ -118,6 +118,9 @@ class UploadFile(BaseModel):
         verbose_name = _('Uploaded File')
         verbose_name_plural = _('Uploaded File')
 
+    def __unicode__(self):
+        return self.file.name
+
     def signal(self):
         signals.uploaded.send(
             sender=self.content_type.model_class(),
@@ -136,17 +139,8 @@ class UploadFile(BaseModel):
         return self.file and os.path.basename(self.file.name) or ''
 
     def open(self, headers=None):
-        if self.mimetype == 'text/csv':
-            return csvutils.UnicodeReader(
-                self.file, headers=headers)
-
-        if self.mimetype == xlsxutils.EXCEL2007:
-            # self.file.path....
-            return xlsxutils.XlsxReader(
-                self.file, headers=headers)
-
-        # TODO: Excel and other file ...
-        return []
+        return utils.create_reader(
+            self.mimetype, self.file, headers=headers)
 
     def get_fields_verbose(self):
         if not hasattr(self, '_fields_verbose'):
@@ -179,3 +173,16 @@ class UploadFile(BaseModel):
             field = self.get_field(name)
             if field and field.name not in excludes:
                 self.set_model_field_value(instance, field, value)
+
+    def clear(self):
+        self.uploadfileerror_set.all().delete()
+
+
+class UploadFileError(BaseModel):
+    upload = models.ForeignKey(UploadFile)
+    row = models.IntegerField(_('Error Row'), help_text=_('Error Row Help'))
+    message = models.TextField(_('Error Message'), default='')
+
+    class Meta:
+        verbose_name = _('Uploaded File Error')
+        verbose_name_plural = _('Uploaded File Error')

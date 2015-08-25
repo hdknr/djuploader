@@ -26,6 +26,7 @@ def create_profile(upload, data):
 
 @receiver(uploaded, sender=models.Profile)
 def uploaded_profile(upload, **kwargs):
+    upload.clear()          # Clear Errors
     for line, row, errors in upload.open():
         if row.get('ID', None):
             profile = models.Profile.objects.get(id=row['ID'])

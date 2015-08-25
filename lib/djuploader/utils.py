@@ -4,6 +4,22 @@
 '''
 from django.utils.encoding import force_text
 from django.http import HttpResponse
+from csvutils import CsvReader, CsvWriter
+from xlsxutils import XlsxReader, XlsxWriter
+
+
+def create_reader(mimetype, *args, **kwargs):
+    return {
+        CsvReader.MIMETYPE: CsvReader,
+        XlsxReader.MIMETYPE: XlsxReader,
+    }[mimetype](*args, **kwargs)
+
+
+def create_writer(mimetype, *args, **kwargs):
+    return {
+        CsvWriter.MIMETYPE: CsvWriter,
+        XlsxWriter.MIMETYPE: XlsxWriter,
+    }[mimetype](*args, **kwargs)
 
 
 class FileResponse(HttpResponse):

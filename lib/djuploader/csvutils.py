@@ -24,6 +24,7 @@ def detect_encoding(stream):
 
 
 class CsvReader(object):
+    MIMETYPE = 'text/csv'
 
     def __init__(
         self, iterable, dialect='excel', error_mode="strict", encoding=None,
@@ -75,6 +76,8 @@ class CsvReader(object):
 
 
 class CsvWriter(object):
+    MIMETYPE = 'text/csv'
+
     def __init__(
         self, stream, dialect=None, encoding=None, errors="strict", **kwds
     ):

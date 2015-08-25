@@ -8,6 +8,8 @@ EXCEL2007 = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 
 
 class XlsxReader(object):
+    MIMETYPE = EXCEL2007
+
     def __init__(self, filename=None, headers=None, sheet=0):
         '''
             :type header: dict or None
@@ -36,6 +38,8 @@ class XlsxReader(object):
 
 
 class XlsxWriter(object):
+    MIMETYPE = EXCEL2007
+
     def __init__(self, stream, **kwargs):
         '''
             :type header: dict or None
