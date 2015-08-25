@@ -7,12 +7,15 @@ import models
 import uuid
 
 
-def update_profile(upload, profile, data):
-    upload.update_instance(profile, data, excludes=['id', 'user'])
-    profile.save()
+def update_profile(upload, line, profile, data):
+    try:
+        upload.update_instance(profile, line, data, excludes=['id', 'user'])
+        profile.save()
+    except Exception, ex:
+        upload.add_error(line, ex.message)
 
 
-def create_profile(upload, data):
+def create_profile(upload, line, data):
     user = User.objects.filter(username=data[u'user.ユーザー名']).first()
     if not user:
         user = User.objects.create_user(
@@ -21,7 +24,7 @@ def create_profile(upload, data):
             uuid.uuid1().hex)
 
     profile = models.Profile(user=user)
-    update_profile(upload, profile, data)
+    update_profile(upload, line, profile, data)
 
 
 @receiver(uploaded, sender=models.Profile)
@@ -30,6 +33,6 @@ def uploaded_profile(upload, **kwargs):
     for line, row, errors in upload.open():
         if row.get('ID', None):
             profile = models.Profile.objects.get(id=row['ID'])
-            update_profile(upload, profile, row)
+            update_profile(upload, line, profile, row)
         else:
-            create_profile(upload, row)
+            create_profile(upload, line, row)

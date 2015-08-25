@@ -7,7 +7,6 @@ from django.db import models
 from django.db.models.fields.files import FieldFile
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
-from django.core.exceptions import ValidationError
 import mimetypes
 import os
 
@@ -155,27 +154,41 @@ class UploadFile(BaseModel):
         return name in meta.fields and meta.get_field_by_name(name) or \
             self.get_fields_verbose().get(name, None)
 
-    def set_model_field_value(self, instance, field, value):
+    def set_model_field_value(self, instance, row, field, value):
         try:
-            if not (value == '' and field.null):
-                if field.choices:
-                    for v, l in field.choices:
-                        if value in (v, l):
-                            setattr(instance, field.name, v)
-                            return
-                else:
-                    setattr(instance, field.name, field.to_python(value))
-        except ValidationError:
-            pass
+            if not value and field.null:
+                # blank value
+                return
 
-    def update_instance(self, instance, params, excludes=[]):
+            for v, l in field.choices:
+                if value in (v, l):
+                    value = v
+                    break
+
+            field.validate(value, instance)
+            setattr(instance, field.name, field.to_python(value))
+
+        except Exception, ex:
+            self.add_error(
+                row, _(u'Field Exception:{0}: "{1}" :{2}').format(
+                    field.verbose_name, value, ex.message))
+
+    def update_instance(self, instance, row, params, excludes=[]):
+        '''
+            :param row: data line number
+        '''
         for name, value in params.items():
             field = self.get_field(name)
             if field and field.name not in excludes:
-                self.set_model_field_value(instance, field, value)
+                self.set_model_field_value(instance, row, field, value)
 
     def clear(self):
         self.uploadfileerror_set.all().delete()
+
+    def add_error(self, row, message):
+        error, created = self.uploadfileerror_set.get_or_create(row=row)
+        error.message += message + "\n"
+        error.save()
 
 
 class UploadFileError(BaseModel):
