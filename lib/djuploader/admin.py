@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 
 class UploadFileAdmin(admin.ModelAdmin):
     actions = ['update_data', ]
-    list_additionals = ('model_data', 'mimetype', )
+    list_additionals = ('model_data', 'mimetype', 'error_list', )
 
     def update_data(self, request, queryset):
         map(lambda instance: instance.signal(), queryset)
@@ -23,6 +23,22 @@ class UploadFileAdmin(admin.ModelAdmin):
 
     model_data.short_description = _("Model Data")
     model_data.allow_tags = True
+
+    def error_list(self, obj):
+        return u'<a href="{0}?upload__id__exact={1}">{2}</a>'.format(
+            reverse("admin:{0}_{1}_changelist".format(
+                obj.uploadfileerror_set.model._meta.app_label,
+                obj.uploadfileerror_set.model._meta.model_name)),
+            obj.id,
+            obj.error_count,)
+
+    error_list.short_description = _("Error List")
+    error_list.allow_tags = True
+
+
+class UploadFileErrorAdmin(admin.ModelAdmin):
+    list_filter = ('upload', )
+    list_excludes = ('updated_at', )
 
 
 def register(app_fullname, admins, ignore_models=[]):

@@ -16,9 +16,6 @@ import utils
 
 
 class BaseModel(models.Model):
-    ordinal = models.IntegerField(
-        _(u'Ordinal'), help_text=_(u'Ordinal Help'),
-        default=0)
     created_at = models.DateTimeField(_(u'Created Datetime'), auto_now_add=True)
     updated_at = models.DateTimeField(_(u'Updated Datetime'), auto_now=True)
 
@@ -193,9 +190,13 @@ class UploadFile(BaseModel):
         error.message += message + "\n"
         error.save()
 
+    @property
+    def error_count(self):
+        return self.uploadfileerror_set.count()
+
 
 class UploadFileError(BaseModel):
-    upload = models.ForeignKey(UploadFile)
+    upload = models.ForeignKey(UploadFile, verbose_name=_('Uploaded File'))
     row = models.IntegerField(_('Error Row'), help_text=_('Error Row Help'))
     message = models.TextField(_('Error Message'), default='')
 
