@@ -11,7 +11,8 @@ class UploadFileAdmin(admin.ModelAdmin):
     list_additionals = ('model_data', 'mimetype', 'error_list', )
 
     def update_data(self, request, queryset):
-        map(lambda instance: instance.signal(), queryset)
+        for instance in queryset:
+            instance.signal(delayed=True)
 
     update_data.short_description = _('Update Data')
 

@@ -10,8 +10,10 @@ from django.utils.translation import ugettext_lazy as _
 import mimetypes
 import os
 
-import utils
 # import traceback
+from djasync.signals import async_call
+import signals
+import utils
 
 
 class BaseModel(models.Model):
@@ -119,12 +121,11 @@ class UploadFile(BaseModel):
     def __unicode__(self):
         return self.file.name
 
-    def signal(self):
-        import signals
-        signals.uploaded_signal(self)
-#         signals.uploaded.send(
-#             sender=self.content_type.model_class(),
-#             upload=self)
+    @async_call(siglal=None)
+    def signal(self, *args, **kwargs):
+        signals.uploaded.send(
+            sender=self.content_type.model_class(),
+            upload=self)
 
     @property
     def mimetype(self):

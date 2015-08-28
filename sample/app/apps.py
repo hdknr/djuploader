@@ -3,7 +3,9 @@ from django.apps import AppConfig as DjangoAppConfig
 from django.utils.translation import (
     ugettext_lazy as _,
 )
-from queue import CeleryLoader
+from djasync.queue import CeleryLoader
+
+celery = CeleryLoader(__file__)
 
 
 class AppConfig(DjangoAppConfig):
