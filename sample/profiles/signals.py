@@ -32,7 +32,10 @@ def uploaded_profile(upload, **kwargs):
     upload.clear()          # Clear Errors
     for line, row, errors in upload.open():
         if row.get('ID', None):
-            profile = models.Profile.objects.get(id=row['ID'])
-            update_profile(upload, line, profile, row)
-        else:
-            create_profile(upload, line, row)
+            profile = models.Profile.objects.filter(id=row['ID']).first()
+            if profile:
+                update_profile(upload, line, profile, row)
+                continue
+
+        # IDの個人属性が見つからなかった
+        create_profile(upload, line, row)

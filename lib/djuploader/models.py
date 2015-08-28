@@ -10,7 +10,6 @@ from django.utils.translation import ugettext_lazy as _
 import mimetypes
 import os
 
-import signals
 import utils
 # import traceback
 
@@ -121,9 +120,11 @@ class UploadFile(BaseModel):
         return self.file.name
 
     def signal(self):
-        signals.uploaded.send(
-            sender=self.content_type.model_class(),
-            upload=self)
+        import signals
+        signals.uploaded_signal(self)
+#         signals.uploaded.send(
+#             sender=self.content_type.model_class(),
+#             upload=self)
 
     @property
     def mimetype(self):

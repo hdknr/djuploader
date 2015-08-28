@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-import django
-from django.apps import apps
-from django.conf import settings
 import types
 import os
 import sys
@@ -25,6 +22,7 @@ class CeleryLoader(types.ModuleType):
         BROKER_URL='amqp://{0}:{1}@localhost:5672/{2}'.format(JOBQ, JOBQ, JOBQ),
         CELERY_DEFAULT_QUEUE=JOBQ,
         CELERY_QUEUES=(Queue(JOBQ, Exchange(JOBQ), routing_key=JOBQ),),
+        # CELERY_ALWAYS_EAGER=True,
     )
     RABBITMQ = '''
 sudo rabbitmqctl add_vhost {JOBQ}
@@ -34,6 +32,7 @@ sudo rabbitmqctl set_permissions -p {JOBQ} {JOBQ} ".*" ".*" ".*"
 
     @classmethod
     def create(cls):
+        from django.conf import settings
         celery = Celery('app')
         celery.config_from_object(cls.CELERY)
         celery.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
@@ -48,8 +47,10 @@ sudo rabbitmqctl set_permissions -p {JOBQ} {JOBQ} ".*" ".*" ".*"
             0,
             os.path.dirname(
                 os.path.dirname(os.path.abspath(__file__))))
-        #
-        django.setup()
-        return apps.get_app_config('app').celery
+
+        from django import apps, setup
+        setup()
+        return apps.apps.get_app_config('app').celery
+
 
 celery = CeleryLoader('celery_loader')

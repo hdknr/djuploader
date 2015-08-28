@@ -34,6 +34,9 @@ class Profile(models.Model):
             (GENDER_FEMALE, _('Gender Female'),),
             (GENDER_MALE, _('Gender Male'),),), default=GENDER_NA)
 
+    created_at = models.DateTimeField(_(u'Created Datetime'), auto_now_add=True)
+    updated_at = models.DateTimeField(_(u'Updated Datetime'), auto_now=True)
+
     class Meta:
         verbose_name = _('Profile')
         verbose_name_plural = _('Profile')
