@@ -108,3 +108,8 @@ INSTALLED_APPS += (
     'djuploader',
     'profiles',         # sample model
 )
+# Celery
+try:
+    from app.celery import *    # noqa
+except:
+    CELERY_ALWAYS_EAGER = True
