@@ -10,6 +10,24 @@ from django.utils.safestring import mark_safe as _S
 import models
 
 
+def _T(src, **ctx):
+    return _S(template.Template(src).render(template.Context(ctx)))
+
+
+def model_data_link(model, parent=None):
+    url = reverse("admin:{0}_{1}_changelist".format(
+        model._meta.app_label,
+        model._meta.model_name,
+    ))
+    if parent:
+        r = [i.field.name for i in parent._meta.related_objects
+             if i.related_model == model]
+        if len(r) > 0:
+            url += "?{0}={1}".format(r[0], parent.id)
+    # finally returns url
+    return url
+
+
 class UploadFileAdminForm(forms.ModelForm):
 
     signal_event = forms.BooleanField(
@@ -31,27 +49,23 @@ class UploadFileAdminForm(forms.ModelForm):
                     parent_model._meta.app_label,
                     parent_model._meta.model_name,),
                 args=(parent.id,))
-            self.fields['parent_object_id'].help_text = _S(template.Template(
-                '''<a href="{{ u }}">{{ i }}</a>
-                ''').render(template.Context(dict(u=url, i=parent))))
+            self.fields['parent_object_id'].help_text = _T(
+                '''<a href="{{ u }}">{{ i }}</a>''', u=url, i=parent)
 
         if parent_model:
             url = reverse("admin:{0}_{1}_changelist".format(
                 parent_model._meta.app_label,
                 parent_model._meta.model_name,
             ))
-            self.fields['parent_content_type'].help_text = _S(template.Template(
-                '''<a href="{{ u }}">{{ m.verbose_name }}</a>'''
-            ).render(template.Context(dict(u=url, m=parent_model._meta))))
+            self.fields['parent_content_type'].help_text = _T(
+                '''<a href="{{ u }}">{{ m.verbose_name }}</a>''',
+                u=url, m=parent_model._meta)
 
         if model:
-            url = reverse("admin:{0}_{1}_changelist".format(
-                model._meta.app_label,
-                model._meta.model_name,
-            ))
-            self.fields['content_type'].help_text = _S(template.Template(
-                '''<a href="{{ u }}">{{ m.verbose_name }}</a>'''
-            ).render(template.Context(dict(u=url, m=model._meta))))
+            link = model_data_link(model, parent)
+            self.fields['content_type'].help_text = _T(
+                '''<a href="{{ u }}">{{ m.verbose_name }}</a>''',
+                u=link, m=model._meta)
 
     def __init__(self, *args, **kwargs):
         initial = kwargs.get('initial', None)
@@ -92,10 +106,10 @@ class UploadFileAdmin(admin.ModelAdmin):
     update_data.short_description = _('Update Data')
 
     def model_data(self, obj):
-        return u'<a href="{0}">{1}</a>'.format(
-            reverse("admin:{0}_{1}_changelist".format(
-                obj.content_type.app_label, obj.content_type.model)),
-            obj.content_type.__unicode__(),)
+        model = obj.content_type.model_class()
+        link = model_data_link(model, obj.parent)
+        return _T('''<a href="{{ u }}">{{ m.verbose_name }}</a>''',
+                  u=link, m=model._meta)
 
     model_data.short_description = _("Model Data")
     model_data.allow_tags = True
