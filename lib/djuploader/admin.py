@@ -1,19 +1,93 @@
 from django.contrib import admin
+from django import template, forms
 from django.apps import apps
+from django.core.urlresolvers import reverse
+from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import (
     ugettext_lazy as _
 )
-from django.core.urlresolvers import reverse
+from django.utils.safestring import mark_safe as _S
+import models
+
+
+class UploadFileAdminForm(forms.ModelForm):
+
+    signal_event = forms.BooleanField(
+        label=_('Signal Uploaded File Event'),
+        help_text=_('Signal Uploaded File Event Help'),
+        required=False)
+
+    class Meta:
+        model = models.UploadFile
+        exclude = []
+
+    def modify_parent_help_text(
+        self, parent=None, parent_model=None, model=None
+    ):
+        if parent:
+            parent_model = type(parent)
+            url = reverse(
+                "admin:{0}_{1}_change".format(
+                    parent_model._meta.app_label,
+                    parent_model._meta.model_name,),
+                args=(parent.id,))
+            self.fields['parent_object_id'].help_text = _S(template.Template(
+                '''<a href="{{ u }}">{{ i }}</a>
+                ''').render(template.Context(dict(u=url, i=parent))))
+
+        if parent_model:
+            url = reverse("admin:{0}_{1}_changelist".format(
+                parent_model._meta.app_label,
+                parent_model._meta.model_name,
+            ))
+            self.fields['parent_content_type'].help_text = _S(template.Template(
+                '''<a href="{{ u }}">{{ m.verbose_name }}</a>'''
+            ).render(template.Context(dict(u=url, m=parent_model._meta))))
+
+        if model:
+            url = reverse("admin:{0}_{1}_changelist".format(
+                model._meta.app_label,
+                model._meta.model_name,
+            ))
+            self.fields['content_type'].help_text = _S(template.Template(
+                '''<a href="{{ u }}">{{ m.verbose_name }}</a>'''
+            ).render(template.Context(dict(u=url, m=model._meta))))
+
+    def __init__(self, *args, **kwargs):
+        initial = kwargs.get('initial', None)
+        super(UploadFileAdminForm, self).__init__(*args, **kwargs)
+
+        if self.instance.parent:
+            m = self.instance.content_type and \
+                self.instance.content_type.model_class()
+            self.modify_parent_help_text(self.instance.parent, model=m)
+        elif initial:
+            ct = ContentType.objects.filter(
+                id=initial.get('parent_content_type')).first()
+            p = ct and ct.get_all_objects_for_this_type().filter(
+                id=initial.get('parent_object_id')).first()
+
+            c = ContentType.objects.filter(
+                id=initial.get('content_type')).first()
+            self.modify_parent_help_text(
+                p, ct and ct.model_class(), c and c.model_class())
+
+    def save(self, *args, **kwargs):
+        instance = super(UploadFileAdminForm, self).save(*args, **kwargs)
+        if self.cleaned_data.get('signal_event', False):
+            instance.signal()
+        return instance
 
 
 class UploadFileAdmin(admin.ModelAdmin):
     actions = ['update_data', ]
     list_additionals = ('parent', 'model_data', 'mimetype', 'error_list', )
     list_excludes = ('created_at', 'parent_content_type', 'parent_object_id',)
+    form = UploadFileAdminForm
 
     def update_data(self, request, queryset):
         for instance in queryset:
-            instance.signal(delayed=True)
+            instance.signal()
 
     update_data.short_description = _('Update Data')
 

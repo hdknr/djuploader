@@ -12,7 +12,6 @@ import mimetypes
 import os
 
 # import traceback
-from djasync.signals import async_receiver
 import signals
 import utils
 
@@ -129,14 +128,10 @@ class UploadFile(BaseModel):
         verbose_name = _('Uploaded File')
         verbose_name_plural = _('Uploaded File')
 
-    def __unicode__(self):
-        return self.file.name
-
-    @async_receiver
     def signal(self, *args, **kwargs):
-        signals.uploaded.send(
-            sender=self.content_type.model_class(),
-            instance=self)
+        sig = getattr(self.model_class,
+                      'uploaded_signal', signals.uploaded_signal)
+        sig.send(sender=type(self), instance=self)
 
     @property
     def mimetype(self):
@@ -144,7 +139,11 @@ class UploadFile(BaseModel):
 
     @property
     def model_meta(self):
-        return self.content_type.model_class()._meta
+        return self.model_class._meta
+
+    @property
+    def model_class(self):
+        return self.content_type.model_class()
 
     @property
     def basename(self):
