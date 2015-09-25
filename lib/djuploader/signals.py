@@ -1,3 +1,3 @@
 from django.dispatch import dispatcher
 
-uploaded = dispatcher.Signal(providing_args=["upload", ])
+uploaded = dispatcher.Signal(providing_args=["instance", ])

@@ -8,7 +8,8 @@ from django.core.urlresolvers import reverse
 
 class UploadFileAdmin(admin.ModelAdmin):
     actions = ['update_data', ]
-    list_additionals = ('model_data', 'mimetype', 'error_list', )
+    list_additionals = ('parent', 'model_data', 'mimetype', 'error_list', )
+    list_excludes = ('created_at', 'parent_content_type', 'parent_object_id',)
 
     def update_data(self, request, queryset):
         for instance in queryset:

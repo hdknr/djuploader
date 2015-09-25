@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.core.files.storage import FileSystemStorage
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -11,7 +12,7 @@ import mimetypes
 import os
 
 # import traceback
-from djasync.signals import async_call
+from djasync.signals import async_receiver
 import signals
 import utils
 
@@ -107,8 +108,18 @@ class UploadFileField(models.FileField):
 
 
 class UploadFile(BaseModel):
+    parent_content_type = models.ForeignKey(
+        ContentType, verbose_name=('Parent Content Type'),
+        null=True, default=None, blank=True,)
+    parent_object_id = models.PositiveIntegerField(
+        null=True, default=None, blank=True,)
+
+    parent = GenericForeignKey(
+        'parent_content_type', 'parent_object_id', )
+
     content_type = models.ForeignKey(
-        ContentType, verbose_name=_('Content Type'))
+        ContentType, verbose_name=_('Content Type'),
+        related_name='target_content_type')
 
     name = models.CharField(
         _(u'Uploaded File Name'), max_length=200)
@@ -121,11 +132,11 @@ class UploadFile(BaseModel):
     def __unicode__(self):
         return self.file.name
 
-    @async_call(siglal=None)
+    @async_receiver
     def signal(self, *args, **kwargs):
         signals.uploaded.send(
             sender=self.content_type.model_class(),
-            upload=self)
+            instance=self)
 
     @property
     def mimetype(self):
