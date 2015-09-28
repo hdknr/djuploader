@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-28 03:28+0000\n"
+"POT-Creation-Date: 2015-09-28 06:27+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,23 +18,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: admin.py:33
+#: admin.py:37
 msgid "Signal Uploaded File Event"
 msgstr "データ処理"
 
-#: admin.py:34
+#: admin.py:38
 msgid "Signal Uploaded File Event Help"
 msgstr "データ処理を起動します"
 
-#: admin.py:117
+#: admin.py:124
 msgid "Update Data"
 msgstr "更新する"
 
-#: admin.py:125
+#: admin.py:132
 msgid "Model Data"
 msgstr "モデルデータ"
 
-#: admin.py:136
+#: admin.py:143
 msgid "Error List"
 msgstr "エラーリスト"
 
@@ -50,19 +50,19 @@ msgstr "作成日時"
 msgid "Updated Datetime"
 msgstr "更新日時"
 
-#: models.py:111
+#: models.py:111 models.py:141
 msgid "Updating Model"
 msgstr "更新対象データ"
 
-#: models.py:111
+#: models.py:111 models.py:141
 msgid "Updating Model Help"
 msgstr "更新対象データ"
 
-#: models.py:114
+#: models.py:114 models.py:145
 msgid "Parent of Updating Model"
 msgstr "更新対象データの親モデル"
 
-#: models.py:115
+#: models.py:115 models.py:146
 msgid "Parent of Updating Model Help"
 msgstr "更新対象データの親モデル"
 
@@ -70,32 +70,52 @@ msgstr "更新対象データの親モデル"
 msgid "Upload Model"
 msgstr "更新対象データ"
 
-#: models.py:142
+#: models.py:150
 msgid "Uploaded File Name"
 msgstr "アップロードファイル名"
 
-#: models.py:143 models.py:146 models.py:147 models.py:236
+#: models.py:152 models.py:164 models.py:165 models.py:254
 msgid "Uploaded File"
 msgstr "更新ファイル"
 
-#: models.py:210
+#: models.py:155
+msgid "Upload File Status"
+msgstr "ファイル処理状態"
+
+#: models.py:156
+msgid "Upload File Status Help"
+msgstr "ファイル処理状態"
+
+#: models.py:158
+msgid "File Uploaded"
+msgstr "アップロード"
+
+#: models.py:159
+msgid "File Under Processing"
+msgstr "処理中"
+
+#: models.py:160
+msgid "File Process Completed"
+msgstr "処理終了"
+
+#: models.py:228
 #, python-brace-format
 msgid "Field Exception:{0}: \"{1}\" :{2}"
 msgstr "フィールド例外:{0}: \"{1}\" :{2}"
 
-#: models.py:237
+#: models.py:255
 msgid "Error Row"
 msgstr "エラー行"
 
-#: models.py:237
+#: models.py:255
 msgid "Error Row Help"
 msgstr "エラーが発生した行"
 
-#: models.py:238
+#: models.py:256
 msgid "Error Message"
 msgstr "エラーメッセージ"
 
-#: models.py:241 models.py:242
+#: models.py:259 models.py:260
 msgid "Uploaded File Error"
 msgstr "更新ファイルエラー"
 

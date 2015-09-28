@@ -132,6 +132,10 @@ class UploadModel(BaseModel):
 
 
 class UploadFile(BaseModel):
+    STATUS_UPLOADED = 0
+    STATUS_PROCESSING = 10
+    STATUS_COMPLETED = 20
+
     upload = models.ForeignKey(
         UploadModel,
         verbose_name=_('Updating Model'), help_text=_('Updating Model Help'),
@@ -144,7 +148,17 @@ class UploadFile(BaseModel):
 
     name = models.CharField(
         _(u'Uploaded File Name'), max_length=200)
+
     file = UploadFileField(_('Uploaded File'))
+
+    status = models.IntegerField(
+        _('Upload File Status'),
+        help_text=_('Upload File Status Help'),
+        choices=(
+            (STATUS_UPLOADED, _('File Uploaded'),),
+            (STATUS_PROCESSING, _('File Under Processing'),),
+            (STATUS_COMPLETED, _('File Process Completed'),),
+        ), default=STATUS_UPLOADED)
 
     class Meta:
         verbose_name = _('Uploaded File')
