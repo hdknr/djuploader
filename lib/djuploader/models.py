@@ -106,9 +106,13 @@ class UploadFileField(models.FileField):
 
 
 class UploadModel(BaseModel):
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(
+        ContentType,
+        verbose_name=_('Updating Model'), help_text=_('Updating Model Help'), )
     parent_content_type = models.ForeignKey(
         ContentType, related_name='uploadmodel_parent',
+        verbose_name=_('Parent of Updating Model'),
+        help_text=_('Parent of Updating Model Help'),
         null=True, default=None, blank=True,)
 
     class Meta:
@@ -129,9 +133,13 @@ class UploadModel(BaseModel):
 
 class UploadFile(BaseModel):
     upload = models.ForeignKey(
-        UploadModel, null=True, default=None, blank=True,)
+        UploadModel,
+        verbose_name=_('Updating Model'), help_text=_('Updating Model Help'),
+        null=True, default=None, blank=True,)
 
     parent_object_id = models.PositiveIntegerField(
+        verbose_name=_('Parent of Updating Model'),
+        help_text=_('Parent of Updating Model Help'),
         null=True, default=None, blank=True,)
 
     name = models.CharField(

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-25 09:20+0000\n"
+"POT-Creation-Date: 2015-09-28 03:28+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,23 +18,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: admin.py:16
+#: admin.py:33
 msgid "Signal Uploaded File Event"
 msgstr "データ処理"
 
-#: admin.py:17
+#: admin.py:34
 msgid "Signal Uploaded File Event Help"
 msgstr "データ処理を起動します"
 
-#: admin.py:92
+#: admin.py:117
 msgid "Update Data"
 msgstr "更新する"
 
-#: admin.py:100
+#: admin.py:125
 msgid "Model Data"
 msgstr "モデルデータ"
 
-#: admin.py:111
+#: admin.py:136
 msgid "Error List"
 msgstr "エラーリスト"
 
@@ -42,43 +42,62 @@ msgstr "エラーリスト"
 msgid "Djuploader"
 msgstr "ファイルアップローダ"
 
-#: models.py:20
+#: models.py:19
 msgid "Created Datetime"
 msgstr "作成日時"
 
-#: models.py:21
+#: models.py:20
 msgid "Updated Datetime"
 msgstr "更新日時"
 
-#: models.py:120
-msgid "Content Type"
-msgstr "モデル"
+#: models.py:111
+msgid "Updating Model"
+msgstr "更新対象データ"
 
-#: models.py:124
+#: models.py:111
+msgid "Updating Model Help"
+msgstr "更新対象データ"
+
+#: models.py:114
+msgid "Parent of Updating Model"
+msgstr "更新対象データの親モデル"
+
+#: models.py:115
+msgid "Parent of Updating Model Help"
+msgstr "更新対象データの親モデル"
+
+#: models.py:119 models.py:120
+msgid "Upload Model"
+msgstr "更新対象データ"
+
+#: models.py:142
 msgid "Uploaded File Name"
 msgstr "アップロードファイル名"
 
-#: models.py:125 models.py:128 models.py:129 models.py:211
+#: models.py:143 models.py:146 models.py:147 models.py:236
 msgid "Uploaded File"
 msgstr "更新ファイル"
 
-#: models.py:185
+#: models.py:210
 #, python-brace-format
 msgid "Field Exception:{0}: \"{1}\" :{2}"
 msgstr "フィールド例外:{0}: \"{1}\" :{2}"
 
-#: models.py:212
+#: models.py:237
 msgid "Error Row"
 msgstr "エラー行"
 
-#: models.py:212
+#: models.py:237
 msgid "Error Row Help"
 msgstr "エラーが発生した行"
 
-#: models.py:213
+#: models.py:238
 msgid "Error Message"
 msgstr "エラーメッセージ"
 
-#: models.py:216 models.py:217
+#: models.py:241 models.py:242
 msgid "Uploaded File Error"
 msgstr "更新ファイルエラー"
+
+#~ msgid "Content Type"
+#~ msgstr "モデル"

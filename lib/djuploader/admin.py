@@ -9,6 +9,10 @@ from django.utils.safestring import mark_safe as _S
 import models
 
 
+class UploadModelAdmin(admin.ModelAdmin):
+    list_excludes = ('created_at', 'updated_at', )
+
+
 def _T(src, **ctx):
     return _S(template.Template(src).render(template.Context(ctx)))
 
