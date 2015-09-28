@@ -97,6 +97,9 @@ class UploadFileAdminForm(forms.ModelForm):
                 pm = all([upload and
                           upload.parent_content_type]) and \
                     upload.parent_content_type.model_class()
+            parent_object_id = initial.get('parent_object_id', None)
+            if upload and parent_object_id:
+                p = upload.get_parents().filter(id=parent_object_id).first()
 
         self.modify_parent_help_text(p, pm, m)
 
