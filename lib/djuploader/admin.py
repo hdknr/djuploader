@@ -2,7 +2,6 @@ from django.contrib import admin
 from django import template, forms
 from django.apps import apps
 from django.core.urlresolvers import reverse
-from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import (
     ugettext_lazy as _
 )
@@ -57,13 +56,15 @@ class UploadFileAdminForm(forms.ModelForm):
                 parent_model._meta.app_label,
                 parent_model._meta.model_name,
             ))
-            self.fields['parent_content_type'].help_text = _T(
-                '''<a href="{{ u }}">{{ m.verbose_name }}</a>''',
+            self.fields['upload'].help_text = _T(
+                '''<a href="{{ u }}">{{ m.verbose_name }}</a> |''',
                 u=url, m=parent_model._meta)
+        else:
+            self.fields['upload'].help_text = ''
 
         if model:
             link = model_data_link(model, parent)
-            self.fields['content_type'].help_text = _T(
+            self.fields['upload'].help_text += _T(
                 '''<a href="{{ u }}">{{ m.verbose_name }}</a>''',
                 u=link, m=model._meta)
 
@@ -71,20 +72,29 @@ class UploadFileAdminForm(forms.ModelForm):
         initial = kwargs.get('initial', None)
         super(UploadFileAdminForm, self).__init__(*args, **kwargs)
 
-        if self.instance.parent:
-            m = self.instance.content_type and \
-                self.instance.content_type.model_class()
-            self.modify_parent_help_text(self.instance.parent, model=m)
-        elif initial:
-            ct = ContentType.objects.filter(
-                id=initial.get('parent_content_type')).first()
-            p = ct and ct.get_all_objects_for_this_type().filter(
-                id=initial.get('parent_object_id')).first()
+        p, pm, m = None, None, None
 
-            c = ContentType.objects.filter(
-                id=initial.get('content_type')).first()
-            self.modify_parent_help_text(
-                p, ct and ct.model_class(), c and c.model_class())
+        if self.instance.upload:
+            m = self.instance.upload and \
+                self.instance.upload.content_type.model_class()
+            pm = all([self.instance.upload and
+                      self.instance.upload.parent_content_type]) and \
+                self.instance.upload.parent_content_type.model_class()
+
+        if self.instance.parent_object:
+            p = self.instance.parent_object
+
+        if initial and 'upload' in initial:
+            id = initial['upload']
+            upload = models.UploadModel.objects.filter(id=id).first()
+            if upload:
+                m = upload and \
+                    upload.content_type.model_class()
+                pm = all([upload and
+                          upload.parent_content_type]) and \
+                    upload.parent_content_type.model_class()
+
+        self.modify_parent_help_text(p, pm, m)
 
     def save(self, *args, **kwargs):
         instance = super(UploadFileAdminForm, self).save(*args, **kwargs)
@@ -95,8 +105,9 @@ class UploadFileAdminForm(forms.ModelForm):
 
 class UploadFileAdmin(admin.ModelAdmin):
     actions = ['update_data', ]
-    list_additionals = ('parent', 'model_data', 'mimetype', 'error_list', )
-    list_excludes = ('created_at', 'parent_content_type', 'parent_object_id',)
+    list_additionals = ('model_data', 'mimetype', 'error_list', )
+    list_excludes = ('created_at', 'parent_object_id',)
+    list_filter = ('upload', )
     form = UploadFileAdminForm
 
     def update_data(self, request, queryset):
@@ -106,8 +117,8 @@ class UploadFileAdmin(admin.ModelAdmin):
     update_data.short_description = _('Update Data')
 
     def model_data(self, obj):
-        model = obj.content_type.model_class()
-        link = model_data_link(model, obj.parent)
+        model = obj.upload.content_type.model_class()
+        link = model_data_link(model, obj.parent_object)
         return _T('''<a href="{{ u }}">{{ m.verbose_name }}</a>''',
                   u=link, m=model._meta)
 

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.fields import GenericForeignKey
 from django.core.files.storage import FileSystemStorage
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -106,19 +105,34 @@ class UploadFileField(models.FileField):
         return True
 
 
-class UploadFile(BaseModel):
+class UploadModel(BaseModel):
+    content_type = models.ForeignKey(ContentType)
     parent_content_type = models.ForeignKey(
-        ContentType, verbose_name=('Parent Content Type'),
+        ContentType, related_name='uploadmodel_parent',
         null=True, default=None, blank=True,)
+
+    class Meta:
+        verbose_name = _('Upload Model')
+        verbose_name_plural = _('Upload Model')
+
+    def __unicode__(self):
+        if self.parent_content_type:
+            p = self.parent_content_type.__unicode__()
+        else:
+            p = ''
+
+        return u"{0} {1}".format(p, self.content_type.__unicode__())
+
+    def get_parents(self):
+        return self.parent_content_type.get_all_objects_for_this_type()
+
+
+class UploadFile(BaseModel):
+    upload = models.ForeignKey(
+        UploadModel, null=True, default=None, blank=True,)
+
     parent_object_id = models.PositiveIntegerField(
         null=True, default=None, blank=True,)
-
-    parent = GenericForeignKey(
-        'parent_content_type', 'parent_object_id', )
-
-    content_type = models.ForeignKey(
-        ContentType, verbose_name=_('Content Type'),
-        related_name='target_content_type')
 
     name = models.CharField(
         _(u'Uploaded File Name'), max_length=200)
@@ -138,16 +152,23 @@ class UploadFile(BaseModel):
         return mimetypes.guess_type(self.file.path)[0]
 
     @property
+    def model_class(self):
+        return self.upload.content_type.model_class()
+
+    @property
     def model_meta(self):
         return self.model_class._meta
 
     @property
-    def model_class(self):
-        return self.content_type.model_class()
-
-    @property
     def basename(self):
         return self.file and os.path.basename(self.file.name) or ''
+
+    @property
+    def parent_object(self):
+        if self.upload and self.upload.parent_content_type and \
+                self.parent_object_id:
+            return self.upload.get_parents().filter(
+                id=self.parent_object_id).first()
 
     def open(self, headers=None):
         return utils.create_reader(
