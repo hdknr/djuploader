@@ -10,17 +10,8 @@ from django.utils.encoding import force_unicode, force_text
 import csv
 import io
 import StringIO
-import pykf
-
-
-def detect_encoding(stream):
-    code = pykf.guess(stream.read())
-    ret = {
-        pykf.UTF8: 'utf-8-sig',
-        pykf.SJIS: 'cp932',     # pykf.SJIS: 'shift-jis',
-    }.get(code, settings.DEFAULT_CHARSET)
-    stream.seek(0)
-    return ret
+import traceback
+import nkf
 
 
 class CsvReader(object):
@@ -35,7 +26,10 @@ class CsvReader(object):
             self.encoding = encoding
             iterable = StringIO.StringIO(iterable.read().encode(encoding))
         else:
-            self.encoding = encoding or detect_encoding(iterable)
+            # force utf8 with nkf module
+            self.encoding = 'utf8'
+            iterable = StringIO.StringIO(nkf.nkf('-w', iterable.read()))
+
         self.headers = headers
         self.reader = headers and \
             csv.reader(iterable, dialect=dialect, *args, **kwargs) or \
@@ -64,13 +58,17 @@ class CsvReader(object):
         if self.line_num == 0:          # TODO: 0, 2, 3, 4...
             self.line_num = 1
 
-        if self.headers:
-            cols = dict(
-                zip(self.headers,
-                    [self.decode(x) for x in self.reader.next()]))
-        else:
-            cols = dict([(self.decode(k), self.decode(v))
-                         for k, v in self.reader.next().items()])
+        line = self.reader.next()
+        try:
+            if self.headers:
+                cols = dict(
+                    zip(self.headers, [self.decode(x) for x in line]))
+            else:
+                cols = dict([(self.decode(k), self.decode(v))
+                             for k, v in line.items()])
+        except:
+            self.errors = traceback.format_exc()
+            cols = {}
 
         return self.line_num, cols, self.errors
 

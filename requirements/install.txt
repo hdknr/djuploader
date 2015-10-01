@@ -8,9 +8,9 @@ django-extensions
 Pillow
 requests
 furl
-pykf
 Markdown
 ordereddict
 gunicorn
 openpyxl
 Celery
+nkf
