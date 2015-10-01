@@ -78,8 +78,8 @@ class UploadFileField(models.FileField):
 
     def generate_filename(self, instance, filename):
         return u"{0}.{1}/{2}".format(
-            instance.content_type.app_label,
-            instance.content_type.model,
+            instance.upload.content_type.app_label,
+            instance.upload.content_type.model,
             filename,
         )
 
