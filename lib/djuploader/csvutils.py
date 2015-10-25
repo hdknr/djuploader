@@ -49,7 +49,7 @@ class CsvReader(object):
         ''' value: str '''
         self.col = self.col + 1
         return force_unicode(
-            value, encoding=self.encoding, errors=self.error_mode)
+            value, encoding=self.encoding, errors=self.error_mode).strip()
 
     def next(self):
         self.reset_state()
