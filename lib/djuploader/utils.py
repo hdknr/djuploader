@@ -8,11 +8,11 @@ from csvutils import CsvReader, CsvWriter
 from xlsxutils import XlsxReader, XlsxWriter
 
 
-def create_reader(mimetype, *args, **kwargs):
-    return {
-        CsvReader.MIMETYPE: CsvReader,
-        XlsxReader.MIMETYPE: XlsxReader,
-    }[mimetype](*args, **kwargs)
+def create_reader(mimetype, path, *args, **kwargs):
+    if mimetype == CsvReader.MIMETYPE:
+        return CsvReader(open(path, 'rU'), *args, **kwargs)
+
+    XlsxReader(open(path), *args, **kwargs)
 
 
 def create_writer(mimetype, *args, **kwargs):
