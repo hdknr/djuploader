@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-'''
-
-'''
 from django.utils.encoding import force_text
 from django.http import HttpResponse
+
+import mimetypes
+
 from csvutils import CsvReader, CsvWriter
 from xlsxutils import XlsxReader, XlsxWriter
 
@@ -24,12 +24,15 @@ def create_writer(mimetype, *args, **kwargs):
 
 class FileResponse(HttpResponse):
     def __init__(
-        self, content='', mimetype=None, status=None,
+        self, content='', filename=None,
         content_type='application/octet-stream',
-        filename=None, *args, **kwargs
+        *args, **kwargs
     ):
+        if filename:
+            content_type = mimetypes.guess_type(filename)[0]
+
         super(FileResponse, self).__init__(
-            content, mimetype, status, content_type)
+            content, content_type=content_type, *args, **kwargs)
 
         if filename:
             self.set_filename(filename)
@@ -37,3 +40,10 @@ class FileResponse(HttpResponse):
     def set_filename(self, filename):
         self['Content-Disposition'] = 'attachment; filename="{0}"'.format(
             force_text(filename).encode('utf8'))
+
+    def export(self, model, header=True, *args, **kwargs):
+        # objects implements UploadQuerySet
+        model.objects.export(
+            self, format=self.get('Content-Type', 'text/csv'),
+            header=header, *args, **kwargs)
+        return self

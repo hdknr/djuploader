@@ -4,6 +4,12 @@ from django.db import models
 import csvutils
 import xlsxutils
 
+_EXCEL = [
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'xlsx',
+]
+_CSV = ['text/csv', 'csv', ]
+
 
 class UploadQuerySet(models.QuerySet):
 
@@ -61,13 +67,14 @@ class UploadQuerySet(models.QuerySet):
                stream, format="csv", header=True, excludes=[], relates=[],
                **kwargs):
 
-        writer = {
-            'csv': csvutils.CsvWriter,
-            'xlsx': xlsxutils.XlsxWriter, }[format](stream, **kwargs)
+        if format in _EXCEL:
+            writer = xlsxutils.XlsxWriter(stream, **kwargs)
+        else:
+            writer = csvutils.CsvWriter(stream, **kwargs)
 
         if header:
             writer.writerow(
-                self.header_row(excludes=excludes, realtes=relates))
+                self.header_row(excludes=excludes, relates=relates))
 
         for instance in self.all():
             cols = self.data_row(instance)
