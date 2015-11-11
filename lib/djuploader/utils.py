@@ -41,9 +41,9 @@ class FileResponse(HttpResponse):
         self['Content-Disposition'] = 'attachment; filename="{0}"'.format(
             force_text(filename).encode('utf8'))
 
-    def export(self, model, header=True, *args, **kwargs):
+    def export(self, queryset, header=True, *args, **kwargs):
         # objects implements UploadQuerySet
-        model.objects.export(
+        queryset.export(
             self, format=self.get('Content-Type', 'text/csv'),
             header=header, *args, **kwargs)
         return self

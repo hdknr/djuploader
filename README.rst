@@ -59,7 +59,8 @@ Exporting Model
 
     @staff_member_required
     def export_contact(request):
-        return FileResponse(filename="contact.csv").export(models.Contact)
+        return FileResponse(filename="contact.csv").export(
+            models.Contact.objects.all())
 
 
 Importing Model
