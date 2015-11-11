@@ -4,14 +4,13 @@ from django.utils.translation import ugettext_lazy as _
 
 from djuploader.queryset import UploadQuerySet
 
+from . import querysets
 
-class Profile(models.Model):
+
+class AbstractProfile(models.Model):
     GENDER_NA = 0
     GENDER_FEMALE = 1
     GENDER_MALE = 2
-
-    user = models.ForeignKey(
-        User, verbose_name=_('System User'))
 
     family_name = models.CharField(
         _('Family Name'), max_length=20)
@@ -38,8 +37,27 @@ class Profile(models.Model):
     updated_at = models.DateTimeField(_(u'Updated Datetime'), auto_now=True)
 
     class Meta:
+        abstract = True
+
+
+class Profile(AbstractProfile):
+    user = models.ForeignKey(
+        User, verbose_name=_('System User'))
+
+    class Meta:
         verbose_name = _('Profile')
         verbose_name_plural = _('Profile')
 
     objects = models.Manager()              # default Manager
     uploader = UploadQuerySet.as_manager()
+
+
+class Contact(AbstractProfile):
+    user = models.ForeignKey(
+        User, verbose_name=_('System User'))
+
+    class Meta:
+        verbose_name = _('Contact')
+        verbose_name_plural = _('Contatct')
+
+    objects = querysets.ContactQuerySet.as_manager()

@@ -2,14 +2,15 @@
 from django.dispatch import receiver
 from django.contrib.auth.models import User
 
-from djuploader.signals import uploaded
+from djuploader.signals import uploaded_signal
 import models
 import uuid
 
 
 def update_profile(upload, line, profile, data):
     try:
-        upload.update_instance(profile, line, data, excludes=['id', 'user'])
+        uploaded_signal.update_instance(
+            profile, line, data, excludes=['id', 'user'])
         profile.save()
     except Exception, ex:
         upload.add_error(line, ex.message)
@@ -27,7 +28,7 @@ def create_profile(upload, line, data):
     update_profile(upload, line, profile, data)
 
 
-@receiver(uploaded, sender=models.Profile)
+@receiver(uploaded_signal, sender=models.Profile)
 def uploaded_profile(upload, **kwargs):
     upload.clear()          # Clear Errors
     for line, row, errors in upload.open():

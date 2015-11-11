@@ -19,3 +19,8 @@ def export_user(request):
     response = FileResponse(filename="user.csv")
     UploadQuerySet(User).export(response, format="csv", encoding="cp932")
     return response
+
+
+@staff_member_required
+def export_contact(request):
+    return FileResponse(filename="contact.csv").export(models.Contact)
