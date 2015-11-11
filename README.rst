@@ -60,3 +60,52 @@ Exporting Model
     @staff_member_required
     def export_contact(request):
         return FileResponse(filename="contact.csv").export(models.Contact)
+
+
+Importing Model
+==================
+
+1. Add `uplaoded_signal` to Model
+--------------------------------------------------
+
+.. code-block:: python
+
+    from django.dispatch import dispatcher
+
+    class Community(models.Model):
+        uploaded_signal = dispatcher.Signal(providing_args=["instance", ])
+
+2. Add receiver
+------------------------
+
+.. code-block:: python
+
+    from django.dispatch import receiver
+    from . import models
+
+    @receiver(models.Community.uploaded_signal)
+    def on_community_uploaded(instance, *args, **kwargs):
+
+        for line, row, errors in instance.open(encoding='cp932'):
+            if not errors:
+                print "LINE=", lne, " do something with dict", row
+
+3. Create admin link
+-----------------------
+
+- templates/admin/communities/community/change_list.html 
+
+.. code-block:: html
+
+    {% extends "admin/change_list.html" %}
+    {% load uploadertags %}
+    
+    {% block object-tools-items %}
+      {% get_upload_model opts.model as um %}       {# get UploadFile instance #}
+      {{ block.super }}
+      <li>
+       <a href="{% url 'admin:djuploader_uploadfile_add' %}?upload={{ um.id }}">
+            {% trans 'Import' %}{% trans 'Community' %}</a>
+      </li>
+    {% endblock %}
+     
