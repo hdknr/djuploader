@@ -112,6 +112,7 @@ class UploadFileAdminForm(forms.ModelForm):
 
 class UploadFileAdmin(admin.ModelAdmin):
     actions = ['update_data', ]
+    raw_id_fields = ['user', ]
     list_additionals = ('model_data', 'mimetype', 'error_list', )
     list_excludes = ('created_at', 'parent_object_id',)
     list_filter = ('upload', )
