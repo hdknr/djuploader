@@ -1,18 +1,16 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import User
 from django.core.files.storage import FileSystemStorage
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.db.models.fields.files import FieldFile
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
-import mimetypes
 import os
 
-# import traceback
-import signals
-import utils
+from . import methods
 
 
 class BaseModel(models.Model):
@@ -105,7 +103,7 @@ class UploadFileField(models.FileField):
         return True
 
 
-class UploadModel(BaseModel):
+class UploadModel(BaseModel, methods.UploadModel):
     content_type = models.ForeignKey(
         ContentType,
         verbose_name=_('Updating Model'), help_text=_('Updating Model Help'), )
@@ -127,11 +125,8 @@ class UploadModel(BaseModel):
 
         return u"{0} {1}".format(p, self.content_type.__unicode__())
 
-    def get_parents(self):
-        return self.parent_content_type.get_all_objects_for_this_type()
 
-
-class UploadFile(BaseModel):
+class UploadFile(BaseModel, methods.UploadFile):
     STATUS_UPLOADED = 0
     STATUS_PROCESSING = 10
     STATUS_COMPLETED = 20
@@ -147,7 +142,8 @@ class UploadFile(BaseModel):
         null=True, default=None, blank=True,)
 
     name = models.CharField(
-        _(u'Uploaded File Name'), max_length=200)
+        _(u'Uploaded File Name'), max_length=200,
+        null=True, default=None, blank=True,)
 
     file = UploadFileField(_('Uploaded File'))
 
@@ -160,94 +156,18 @@ class UploadFile(BaseModel):
             (STATUS_COMPLETED, _('File Process Completed'),),
         ), default=STATUS_UPLOADED)
 
+    user = models.ForeignKey(
+        User,
+        verbose_name=_('Upload User'), help_text=_('Upload User Help'),
+        null=True, default=None, blank=True,)
+
+    signal_name = models.CharField(
+        _(u'Signal Name'), help_text=_(u'Signal Name'),
+        max_length=30, default="uploaded_signal")
+
     class Meta:
         verbose_name = _('Uploaded File')
         verbose_name_plural = _('Uploaded File')
-
-    def signal(self, *args, **kwargs):
-        sig = getattr(self.model_class,
-                      'uploaded_signal', signals.uploaded_signal)
-        sig.send(sender=type(self), instance=self)
-
-    @property
-    def mimetype(self):
-        return mimetypes.guess_type(self.file.path)[0]
-
-    @property
-    def model_class(self):
-        return self.upload.content_type.model_class()
-
-    @property
-    def model_meta(self):
-        return self.model_class._meta
-
-    @property
-    def basename(self):
-        return self.file and os.path.basename(self.file.name) or ''
-
-    @property
-    def parent_object(self):
-        if self.upload and self.upload.parent_content_type and \
-                self.parent_object_id:
-            return self.upload.get_parents().filter(
-                id=self.parent_object_id).first()
-
-    def open(self, headers=None, *args, **kwargs):
-        return utils.create_reader(
-            self.mimetype, self.file.path, headers=headers, *args, **kwargs)
-
-    def get_fields_verbose(self):
-        if not hasattr(self, '_fields_verbose'):
-            self._fields_verbose = dict(
-                (field.verbose_name, field)
-                for field in self.model_meta.fields)
-        return self._fields_verbose
-
-    def get_field(self, name):
-        ''' field name or verbose name '''
-        meta = self.model_meta
-        return name in meta.fields and meta.get_field_by_name(name) or \
-            self.get_fields_verbose().get(name, None)
-
-    def set_model_field_value(self, instance, row, field, value):
-        try:
-            if not value and field.null:
-                # blank value
-                return
-
-            for v, l in field.choices:
-                if value in (v, l):
-                    value = v
-                    break
-
-            field.validate(value, instance)
-            setattr(instance, field.name, field.to_python(value))
-
-        except Exception, ex:
-            self.add_error(
-                row, _(u'Field Exception:{0}: "{1}" :{2}').format(
-                    field.verbose_name, value, ex.message))
-
-    def update_instance(self, instance, row, params, excludes=[]):
-        '''
-            :param row: data line number
-        '''
-        for name, value in params.items():
-            field = self.get_field(name)
-            if field and field.name not in excludes:
-                self.set_model_field_value(instance, row, field, value)
-
-    def clear(self):
-        self.uploadfileerror_set.all().delete()
-
-    def add_error(self, row, message):
-        error, created = self.uploadfileerror_set.get_or_create(row=row)
-        error.message += message + "\n"
-        error.save()
-
-    @property
-    def error_count(self):
-        return self.uploadfileerror_set.count()
 
 
 class UploadFileError(BaseModel):

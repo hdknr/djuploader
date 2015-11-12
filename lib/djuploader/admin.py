@@ -124,6 +124,8 @@ class UploadFileAdmin(admin.ModelAdmin):
     update_data.short_description = _('Update Data')
 
     def model_data(self, obj):
+        if not obj.upload:
+            return ''
         model = obj.upload.content_type.model_class()
         link = model_data_link(model, obj.parent_object)
         return _T('''<a href="{{ u }}">{{ m.verbose_name }}</a>''',
