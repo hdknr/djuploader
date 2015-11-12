@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
+from django.dispatch import dispatcher, receiver
+
 
 from djuploader.queryset import UploadQuerySet
 
@@ -53,6 +55,7 @@ class Profile(AbstractProfile):
 
 
 class Contact(AbstractProfile):
+    uploaded_signal = dispatcher.Signal(providing_args=["instance", ])
     user = models.ForeignKey(
         User, verbose_name=_('System User'))
 
@@ -61,3 +64,11 @@ class Contact(AbstractProfile):
         verbose_name_plural = _('Contatct')
 
     objects = querysets.ContactQuerySet.as_manager()
+
+
+@receiver(Contact.uploaded_signal)
+def on_contact_uploaded(instance, *args, **kwargs):
+    for line, row, errors in instance.open(encoding='cp932'):
+        if not errors and instance.parent_object_id:
+            Contact.objects.get_or_create(
+                user_id=instance.parent_object_id, **row)

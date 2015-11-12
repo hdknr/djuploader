@@ -89,7 +89,7 @@ Importing Model
 
         for line, row, errors in instance.open(encoding='cp932'):
             if not errors:
-                print "LINE=", lne, " do something with dict", row
+                print "LINE=", line, " do something with dict", row
 
 3. Create admin link
 -----------------------

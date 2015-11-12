@@ -1,0 +1,33 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+{% load uploadertags %}
+
+{% block object-tools-items %}
+  {% get_upload_model 'profiles.contact' parent=original.user as um %}       {# get UploadFile instance #}
+  {{ block.super }}
+
+{% if object_id %}
+  <li><a href="{% url 'admin:djuploader_uploadfile_add' %}?upload={{ um.id }}&parent_object_id={{ original.user.id }}">
+    {% trans 'Upload' %}{% trans 'Contact' %}</a></li>
+{% endif %}
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super  }}
+<script src="{{ STATIC_URL }}theme/js/jquery-1.11.1.min.js"></script>
+<script src="{{ STATIC_URL }}theme/jqui/jquery-ui.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+$(function(){
+ $("a.button").button();
+});
+</script>
+{% endblock %}
+
+
+{% block extrastyle %}
+  {{ block.super }}
+<link href="{{ STATIC_URL }}theme/css/font-awesome.min.css" rel="stylesheet">
+<link href="{{ STATIC_URL }}theme/jqui/jquery-ui.min.css" rel="stylesheet">
+<style type="text/css">
+</style>
+{% endblock %}
