@@ -85,8 +85,15 @@ class CsvWriter(object):
         self.errors = errors
 
     def writerow(self, row):
-        self.writer.writerow(
-            map(lambda s: force_text(s and s or '').encode(self.encoding), row))
+
+        def _convert(s):
+            if s is None:
+                return ''
+            if isinstance(s, basestring):
+                return u'{0}'.format(force_text(s)).encode(self.encoding)
+            return s
+
+        self.writer.writerow(map(lambda s: _convert(s), row))
 
     def close(self):
         pass
