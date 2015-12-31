@@ -12,7 +12,7 @@ def create_reader(mimetype, path, *args, **kwargs):
     if mimetype == CsvReader.MIMETYPE:
         return CsvReader(open(path, 'rU'), *args, **kwargs)
 
-    XlsxReader(open(path), *args, **kwargs)
+    return XlsxReader(open(path), *args, **kwargs)
 
 
 def create_writer(mimetype, *args, **kwargs):
