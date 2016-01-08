@@ -30,7 +30,7 @@ class XlsxReader(object):
         for row in self.book.worksheets[self.sheet].rows:
             line += 1
             if line == 1 and len(header) == 0:
-                header = self.row_values(row)
+                header = [v and v.strip() for v in self.row_values(row)]
                 continue
             values = self.row_values(row)
             rowdict = dict(zip(header, values))
