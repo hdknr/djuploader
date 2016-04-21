@@ -146,6 +146,10 @@ class UploadFileAdmin(admin.ModelAdmin):
     error_list.short_description = _("Error List")
     error_list.allow_tags = True
 
+    def get_changeform_initial_data(self, request):
+        ''' djano API '''
+        return {'user': request.user, }
+
 
 class UploadFileErrorAdmin(admin.ModelAdmin):
     list_filter = ('upload', )
