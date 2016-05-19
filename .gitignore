@@ -7,3 +7,4 @@ app/local_settings.py
 logs
 assets
 sample/upload
+migrations

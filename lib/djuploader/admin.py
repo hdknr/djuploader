@@ -6,6 +6,8 @@ from django.utils.translation import (
     ugettext_lazy as _
 )
 from django.utils.safestring import mark_safe as _S
+from django.db import transaction
+
 import models
 
 
@@ -103,10 +105,16 @@ class UploadFileAdminForm(forms.ModelForm):
 
         self.modify_parent_help_text(p, pm, m)
 
+    def on_commit(self):
+        uploaded = getattr(self, 'uploaded', None)
+        uploaded and uploaded.signal()
+
     def save(self, *args, **kwargs):
+        transaction.on_commit(self.on_commit)
         instance = super(UploadFileAdminForm, self).save(*args, **kwargs)
         if self.cleaned_data.get('signal_event', False):
-            instance.signal()
+            self.uploaded = instance
+            instance.save()
         return instance
 
 
