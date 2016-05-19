@@ -148,7 +148,10 @@ class UploadFileAdmin(admin.ModelAdmin):
 
     def get_changeform_initial_data(self, request):
         ''' djano API '''
-        return {'user': request.user, }
+        initial = super(UploadFileAdmin,
+                        self).get_changeform_initial_data(request)
+        initial['user'] = request.user
+        return initial
 
 
 class UploadFileErrorAdmin(admin.ModelAdmin):
