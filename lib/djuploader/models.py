@@ -182,6 +182,11 @@ class UploadFileError(BaseModel):
         verbose_name = _('Uploaded File Error')
         verbose_name_plural = _('Uploaded File Error')
 
+    def __unicode__(self):
+        return u"{} {}".format(
+            self.upload and self.upload.__unicode__() or '',
+            self.row or '')
+
 
 def remove_missing_files():
     from django.utils._os import abspathu
