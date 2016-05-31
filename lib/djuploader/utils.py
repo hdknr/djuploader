@@ -12,6 +12,8 @@ def create_reader(mimetype, path, *args, **kwargs):
     if mimetype == CsvReader.MIMETYPE:
         return CsvReader(open(path, 'rU'), *args, **kwargs)
 
+    if 'encoding' in kwargs:
+        kwargs.pop('encoding')
     return XlsxReader(open(path), *args, **kwargs)
 
 
