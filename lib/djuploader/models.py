@@ -169,6 +169,9 @@ class UploadFile(BaseModel, methods.UploadFile):
         verbose_name = _('Uploaded File')
         verbose_name_plural = _('Uploaded File')
 
+    def __unicode__(self):
+        return self.name or (self.file and self.file.name) or ''
+
 
 class UploadFileError(BaseModel):
     upload = models.ForeignKey(UploadFile, verbose_name=_('Uploaded File'))
