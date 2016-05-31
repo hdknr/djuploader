@@ -3,6 +3,8 @@
 import os
 import mimetypes
 from . import (signals, utils)
+import json
+import traceback
 
 
 class UploadModel(object):
@@ -94,6 +96,12 @@ class UploadFile(object):
         error, created = self.uploadfileerror_set.get_or_create(row=row)
         error.message += message + "\n"
         error.save()
+
+    def on_except(self, row, rowdata):
+        message = "\n-----\n".join([
+            json.dumps(rowdata, ensure_ascii=False),
+            traceback.format_exc()])
+        self.add_error(row, message)
 
     @property
     def error_count(self):

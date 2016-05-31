@@ -10,7 +10,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 import os
 
-from . import methods
+from . import methods, queryset
 
 
 class BaseModel(models.Model):
