@@ -40,19 +40,19 @@ class XlsxReader(object):
 class XlsxWriter(object):
     MIMETYPE = EXCEL2007
 
-    def __init__(self, stream, **kwargs):
+    def __init__(self, stream, src=None, start=1, **kwargs):
         '''
             :type header: dict or None
             :param haeder: if None, the first row is `header`
         '''
         self.stream = stream
-        self.book = Workbook()
+        self.book = src and load_workbook(filename=src) or Workbook()
         self.sheet = self.book.active
         self.sheet.title = "NewSheet"
-        self.row = 1
+        self.row = start
 
     def writerow(self, row):
-        for i in xrange(1, len(row)):
+        for i in xrange(1, len(row) + 1):
             ci = "{0}{1}".format(cell.get_column_letter(i), self.row)
             self.sheet.cell(ci).value = force_unicode(row[i - 1])
         self.row += 1
