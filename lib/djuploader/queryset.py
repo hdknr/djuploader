@@ -1,16 +1,23 @@
 # -*- coding: utf-8 -*-
 from django.db import models
 
-import json
 import csvutils
 import xlsxutils
-import traceback
+# import traceback
 
 _EXCEL = [
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'xlsx',
 ]
 _CSV = ['text/csv', 'csv', ]
+
+
+class UploadModelQuerySet(models.QuerySet):
+    def get_for(self, model_class, parent):
+        res, _x = self.get_or_create(
+            content_type=self.model.contenttype(model_class),
+            parent_content_type=parent and self.model.contenttype(parent),)
+        return res
 
 
 class UploadQuerySet(models.QuerySet):
@@ -83,3 +90,16 @@ class UploadQuerySet(models.QuerySet):
             writer.writerow(cols)
 
         writer.close()
+
+    def upload_for(self, fileobj, model_class=None, parent=None, **kwargs):
+        model_class = model_class or self.model.MODEL_CLASS
+        if not model_class:
+            raise Exception(_('No Model Class'))
+
+        upload = self.model._meta.get_field(
+            'upload').related_model.objects.get_for(model_class, parent)
+
+        if parent:
+            kwargs['parent_object_id'] = parent.id
+
+        return self.create(upload=upload, file=fileobj, **kwargs)

@@ -20,8 +20,10 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
 
-    def contenttype(self):
-        return ContentType.objects.get_for_model(self.__class__)
+    @classmethod
+    def contenttype(cls, model=None):
+        model = model or cls
+        return ContentType.objects.get_for_model(model)
 
     def admin_change_url(self):
         url = 'admin:{0}_{1}_change'.format(
@@ -125,8 +127,12 @@ class UploadModel(BaseModel, methods.UploadModel):
 
         return u"{0} {1}".format(p, self.content_type.__unicode__())
 
+    objects = queryset.UploadModelQuerySet.as_manager()
+
 
 class UploadFile(BaseModel, methods.UploadFile):
+    MODEL_CLASS = None
+
     STATUS_UPLOADED = 0
     STATUS_PROCESSING = 10
     STATUS_COMPLETED = 20
@@ -171,6 +177,8 @@ class UploadFile(BaseModel, methods.UploadFile):
 
     def __unicode__(self):
         return self.name or (self.file and self.file.name) or ''
+
+    objects = queryset.UploadQuerySet.as_manager()
 
 
 class UploadFileError(BaseModel):
