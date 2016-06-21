@@ -7,22 +7,38 @@ from django.utils.encoding import force_unicode
 EXCEL2007 = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 
 
-class XlsxReader(object):
+class XlsxBaseReader(object):
     MIMETYPE = EXCEL2007
 
-    def __init__(self, filename=None, headers=None, sheet=0):
+    def __init__(
+        self, filename=None, headers=None, sheet=0, converter=None,
+        data_only=True,
+    ):
         '''
             :type header: dict or None
             :param haeder: if None, the first row is `header`
         '''
+        self.converter = converter or (lambda a: a)
         self.filename = filename    # filename or file
         self.sheet = sheet
         self.headers = headers
         if self.filename:
-            self.book = load_workbook(filename=self.filename)
+            self.book = load_workbook(
+                filename=self.filename, data_only=data_only)
 
     def row_values(self, row):
-        return [cell.value for cell in row if cell]
+        return [cell.value and self.converter(cell.value) or None
+                for cell in row if cell]
+
+    def __iter__(self):
+        line = 0
+        for row in self.book.worksheets[self.sheet].rows:
+            line += 1
+            values = self.row_values(row)
+            yield line, values
+
+
+class XlsxReader(XlsxBaseReader):
 
     def __iter__(self):
         header = list(self.headers or [])
