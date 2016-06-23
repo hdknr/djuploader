@@ -6,6 +6,8 @@ from . import (signals, utils)
 import json
 import traceback
 
+DEFAULT_MIMETYPE = 'text/csv'
+
 
 class UploadModel(object):
 
@@ -23,7 +25,7 @@ class UploadFile(object):
 
     @property
     def mimetype(self):
-        return mimetypes.guess_type(self.file.path)[0]
+        return mimetypes.guess_type(self.file.path)[0] or DEFAULT_MIMETYPE
 
     @property
     def model_class(self):
