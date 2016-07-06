@@ -7,6 +7,12 @@ import mimetypes
 from csvutils import CsvReader, CsvWriter
 from xlsxutils import XlsxReader, XlsxWriter
 
+DEFAULT_MIMETYPE = 'text/csv'
+
+
+def get_mimetype(path):
+    return mimetypes.guess_type(path)[0] or DEFAULT_MIMETYPE
+
 
 def create_reader(mimetype, path, *args, **kwargs):
     if mimetype == CsvReader.MIMETYPE:
@@ -31,10 +37,13 @@ class FileResponse(HttpResponse):
         *args, **kwargs
     ):
         if filename:
-            content_type = mimetypes.guess_type(filename)[0]
+            content_type = get_mimetype(filename)
 
         super(FileResponse, self).__init__(
             content, content_type=content_type, *args, **kwargs)
+
+        # Writer
+        self.writer = create_writer(content_type, self, **kwargs)
 
         if filename:
             self.set_filename(filename)
