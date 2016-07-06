@@ -42,10 +42,10 @@ class XlsxReader(XlsxBaseReader):
 
     def __iter__(self):
         header = list(self.headers or [])
-        line = 0
+        line = -1
         for row in self.book.worksheets[self.sheet].rows:
             line += 1
-            if line == 1 and len(header) == 0:
+            if line == 0 and len(header) == 0:
                 header = [v and v.strip() for v in self.row_values(row)]
                 continue
             values = self.row_values(row)
