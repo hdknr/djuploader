@@ -5,7 +5,7 @@ from django.http import HttpResponse
 import mimetypes
 
 from csvutils import CsvReader, CsvWriter
-from xlsxutils import XlsxReader, XlsxWriter
+from xlsxutils import XlsxReader, XlsxWriter, XlsxBaseReader
 
 DEFAULT_MIMETYPE = 'text/csv'
 
@@ -14,12 +14,14 @@ def get_mimetype(path):
     return mimetypes.guess_type(path)[0] or DEFAULT_MIMETYPE
 
 
-def create_reader(mimetype, path, *args, **kwargs):
+def create_reader(mimetype, path, headless=False, *args, **kwargs):
     if mimetype == CsvReader.MIMETYPE:
         return CsvReader(open(path, 'rU'), *args, **kwargs)
 
     if 'encoding' in kwargs:
         kwargs.pop('encoding')
+    if headless:
+        return XlsxBaseReader(open(path), *args, **kwargs)
     return XlsxReader(open(path), *args, **kwargs)
 
 

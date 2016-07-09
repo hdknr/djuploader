@@ -12,7 +12,7 @@ class XlsxBaseReader(object):
 
     def __init__(
         self, filename=None, headers=None, sheet=0, converter=None,
-        data_only=True,
+        data_only=True, skip=0
     ):
         '''
             :type header: dict or None
@@ -21,6 +21,7 @@ class XlsxBaseReader(object):
         self.converter = converter or (lambda a: a)
         self.filename = filename    # filename or file
         self.sheet = sheet
+        self.skip = skip
         self.headers = headers
         if self.filename:
             self.book = load_workbook(
@@ -31,8 +32,10 @@ class XlsxBaseReader(object):
                 for cell in row if cell]
 
     def __iter__(self):
+
         line = 0
-        for row in self.book.worksheets[self.sheet].rows:
+        for row in self.book.worksheets[self.sheet].iter_rows(
+                row_offset=self.skip):
             line += 1
             values = self.row_values(row)
             yield line, values

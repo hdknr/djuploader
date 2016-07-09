@@ -43,9 +43,10 @@ class UploadFile(object):
             return self.upload.get_parents().filter(
                 id=self.parent_object_id).first()
 
-    def open(self, headers=None, *args, **kwargs):
+    def open(self, headers=None, headless=False, *args, **kwargs):
         return utils.create_reader(
-            self.mimetype, self.file.path, headers=headers, *args, **kwargs)
+            self.mimetype, self.file.path,
+            headless=headless, headers=headers, *args, **kwargs)
 
     def get_fields_verbose(self):
         if not hasattr(self, '_fields_verbose'):
