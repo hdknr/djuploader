@@ -104,3 +104,10 @@ class UploadQuerySet(models.QuerySet):
             kwargs['parent_object_id'] = parent.id
 
         return self.create(upload=upload, file=fileobj, **kwargs)
+
+    def instanciate(self, parent=None, **kwargs):
+        from .models import UploadModel
+        upload = UploadModel.objects.get_for(self.model, parent)
+        if parent:
+            kwargs['parent_object_id'] = parent.id
+        return self.model(upload=upload, **kwargs)
