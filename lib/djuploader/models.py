@@ -9,6 +9,8 @@ from django.db.models.fields.files import FieldFile
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 import os
+from django.contrib.auth import get_permission_codename
+
 
 from . import methods, queryset
 
@@ -36,6 +38,24 @@ class BaseModel(models.Model):
             self.admin_change_url(),
             self.__unicode__(),
         ))
+
+    @classmethod
+    def permission(cls, codename, model=None):
+        model = model or cls
+        return cls.contenttype(model).permission_set.filter(
+            codename=codename).first()
+
+    @classmethod
+    def perm_name(cls, action, model=None):
+        model = model or cls
+        return "{}.{}".format(
+            model._meta.app_label,
+            get_permission_codename(action, model._meta))
+
+    @classmethod
+    def perm_code(cls, action, model=None):
+        model = model or cls
+        return get_permission_codename(action, model._meta)
 
 
 class FieldFileEx(FieldFile):
