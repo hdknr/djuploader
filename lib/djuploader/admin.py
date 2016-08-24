@@ -165,6 +165,8 @@ class UploadFileAdmin(admin.ModelAdmin):
 class UploadFileErrorAdmin(admin.ModelAdmin):
     list_filter = ('upload', )
     list_excludes = ('updated_at', )
+    readonly_fields = ('upload', 'row', 'message')
+    search_fields = ('message', )
 
 
 def register(app_fullname, admins, ignore_models=[]):
