@@ -90,7 +90,11 @@ class CsvWriter(object):
             if s is None:
                 return ''
             if isinstance(s, basestring):
-                return u'{0}'.format(force_text(s)).encode(self.encoding)
+                try:
+                    return u'{0}'.format(force_text(s)).encode(
+                        self.encoding, errors='ignore')
+                except:
+                    pass
             return s
 
         self.writer.writerow(map(lambda s: _convert(s), row))
