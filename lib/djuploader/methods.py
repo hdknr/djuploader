@@ -2,7 +2,7 @@
 
 import os
 from . import (signals, utils)
-import json
+from .serializers import BaseObjectSerializer as Json
 import traceback
 
 
@@ -99,7 +99,7 @@ class UploadFile(object):
 
     def on_except(self, row, rowdata):
         message = "\n-----\n".join([
-            json.dumps(rowdata, ensure_ascii=False),
+            Json.to_json(rowdata, ensure_ascii=False),
             traceback.format_exc()])
         self.add_error(row, message)
 
