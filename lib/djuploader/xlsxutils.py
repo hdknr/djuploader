@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-from openpyxl import load_workbook, Workbook, cell
+from openpyxl import load_workbook, Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 from django.utils.encoding import force_unicode
+from openpyxl.utils import get_column_letter
 
 
 EXCEL2007 = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -72,7 +73,7 @@ class XlsxWriter(object):
 
     def writerow(self, row):
         for i in xrange(1, len(row) + 1):
-            ci = "{0}{1}".format(cell.get_column_letter(i), self.row)
+            ci = "{0}{1}".format(get_column_letter(i), self.row)
             self.sheet.cell(ci).value = force_unicode(row[i - 1])
         self.row += 1
 
