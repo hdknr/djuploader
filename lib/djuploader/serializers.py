@@ -22,7 +22,10 @@ class BaseObjectSerializer(json.JSONEncoder):
 
     @classmethod
     def to_json(cls, obj, *args, **kwargs):
-        return json.dumps(obj, cls=cls, *args, **kwargs)
+        try:
+            return json.dumps(obj, cls=cls, *args, **kwargs)
+        except:
+            return ''
 
     @classmethod
     def to_yaml(cls, obj, *args, **kwargs):

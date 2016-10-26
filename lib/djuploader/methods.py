@@ -99,7 +99,7 @@ class UploadFile(object):
 
     def on_except(self, row, rowdata):
         message = "\n-----\n".join([
-            Json.to_json(rowdata, ensure_ascii=False),
+            Json.to_json(rowdata, ensure_ascii=False).encode('utf-8'),
             traceback.format_exc()])
         self.add_error(row, message)
 
