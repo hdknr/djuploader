@@ -92,16 +92,18 @@ class UploadFile(object):
     def clear(self):
         self.uploadfileerror_set.all().delete()
 
-    def add_error(self, row, message):
+    def add_error(self, row, message, exception=None):
         error, created = self.uploadfileerror_set.get_or_create(row=row)
         error.message += message + "\n"
+        error.exception = exception
         error.save()
 
-    def on_except(self, row, rowdata):
-        message = "\n-----\n".join([
-            Json.to_json(rowdata, ensure_ascii=False).encode('utf-8'),
-            traceback.format_exc()])
-        self.add_error(row, message)
+    def on_except(self, row, rowdata, ex=None):
+        message = Json.to_json(
+            {'error': ex and ex.message or traceback.format_exc(0),
+             'data': rowdata, },
+            ensure_ascii=False).encode('utf-8')
+        self.add_error(row, message, traceback.format_exc())
 
     @property
     def error_count(self):
