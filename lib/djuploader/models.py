@@ -205,6 +205,8 @@ class UploadFileError(BaseModel):
     upload = models.ForeignKey(UploadFile, verbose_name=_('Uploaded File'))
     row = models.IntegerField(_('Error Row'), help_text=_('Error Row Help'))
     message = models.TextField(_('Error Message'), default='')
+    exception = models.TextField(
+        _('Error Exception'), default='', blank=True, null=True)
 
     class Meta:
         verbose_name = _('Uploaded File Error')

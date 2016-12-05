@@ -112,6 +112,16 @@ class UploadQuerySet(models.QuerySet):
             kwargs['parent_object_id'] = parent.id
         return self.model(upload=upload, **kwargs)
 
+    def filter_for(self, model_class, parent=None):
+        from .models import BaseModel
+        params = dict(
+            upload__content_type=BaseModel.contenttype(model_class),
+            upload__parent_content_type=parent and BaseModel.contenttype(parent),  # NOQA
+        )
+        if parent:
+            params['parent_object_id'] = parent.id
+        return self.filter(**params)
+
 
 class UploaderQuerySet(models.QuerySet):
 
