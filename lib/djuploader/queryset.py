@@ -73,6 +73,10 @@ class UploadQuerySet(models.QuerySet):
             cols += [value and getattr(value, i, None) or '' for i in rcs]
         return cols
 
+    def for_each(self, writer, instance):
+        cols = self.data_row(instance)
+        writer.writerow(cols)
+
     def export(self,
                stream, format="csv", header=True, excludes=[], relates=[],
                **kwargs):
@@ -82,14 +86,10 @@ class UploadQuerySet(models.QuerySet):
         else:
             writer = csvutils.CsvWriter(stream, **kwargs)
 
-        if header:
-            writer.writerow(
-                self.header_row(excludes=excludes, relates=relates))
-
+        header and writer.writerow(
+            self.header_row(excludes=excludes, relates=relates))
         for instance in self.all():
-            cols = self.data_row(instance)
-            writer.writerow(cols)
-
+            self.for_each(writer, instance)
         writer.close()
 
     def upload_for(self, fileobj, model_class=None, parent=None, **kwargs):

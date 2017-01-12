@@ -54,9 +54,15 @@ class FileResponse(HttpResponse):
         self['Content-Disposition'] = 'attachment; filename="{0}"'.format(
             force_text(filename).encode('utf8'))
 
-    def export(self, queryset, header=True, *args, **kwargs):
+    def export(
+            self, queryset, header=True,
+            excludes=[], relates=[], *args, **kwargs):
         # objects implements UploadQuerySet
-        queryset.export(
-            self, format=self.get('Content-Type', 'text/csv'),
-            header=header, *args, **kwargs)
-        return self
+
+        header and self.writer.writerow(
+            queryset.header_row(excludes=excludes, relates=relates))
+
+        for instance in self.all():
+            queryset.for_each(self.writer, instance)
+
+        self.writer.close()
