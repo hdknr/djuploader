@@ -29,8 +29,7 @@ class XlsxBaseReader(object):
                 filename=self.filename, data_only=data_only)
 
     def row_values(self, row):
-        return [cell.value and self.converter(cell.value) or None
-                for cell in row if cell]
+        return [self.converter(cell.value) for cell in row if cell]
 
     def __iter__(self):
 
