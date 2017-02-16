@@ -62,7 +62,8 @@ class FileResponse(HttpResponse):
         header and self.writer.writerow(
             queryset.header_row(excludes=excludes, relates=relates))
 
-        for instance in self.all():
+        for instance in queryset.all():
             queryset.for_each(self.writer, instance)
 
         self.writer.close()
+        return self
