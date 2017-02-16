@@ -35,17 +35,13 @@ def create_writer(mimetype, *args, **kwargs):
 class FileResponse(HttpResponse):
     def __init__(
         self, content='', filename=None,
-        content_type='application/octet-stream',
-        *args, **kwargs
+        content_type='application/octet-stream', *args, **kwargs
     ):
         if filename:
             content_type = get_mimetype(filename)
 
         super(FileResponse, self).__init__(
             content, content_type=content_type, *args, **kwargs)
-
-        # Writer
-        self.writer = create_writer(content_type, self, **kwargs)
 
         if filename:
             self.set_filename(filename)
@@ -54,16 +50,9 @@ class FileResponse(HttpResponse):
         self['Content-Disposition'] = 'attachment; filename="{0}"'.format(
             force_text(filename).encode('utf8'))
 
-    def export(
-            self, queryset, header=True,
-            excludes=[], relates=[], *args, **kwargs):
-        # objects implements UploadQuerySet
-
-        header and self.writer.writerow(
-            queryset.header_row(excludes=excludes, relates=relates))
-
-        for instance in queryset.all():
-            queryset.for_each(self.writer, instance)
-
-        self.writer.close()
+    def export(self, queryset, header=True,
+               excludes=[], relates=[], *args, **kwargs):
+        queryset.export(
+            self, header=header,
+            excludes=excludes, relates=relates, **kwargs)
         return self
