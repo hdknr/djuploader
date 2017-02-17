@@ -39,6 +39,7 @@ class FileResponse(HttpResponse):
     ):
         if filename:
             content_type = get_mimetype(filename)
+            self.writer = create_writer(content_type, self, *args, **kwargs)
 
         super(FileResponse, self).__init__(
             content, content_type=content_type, *args, **kwargs)
